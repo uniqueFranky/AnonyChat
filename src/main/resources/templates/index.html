@@ -34,7 +34,7 @@
 
         function getConnection() {
             username = document.getElementById("username").value;
-            webSocket = new WebSocket("ws://120.24.213.224:8080/chat/" + document.getElementById("username").value);
+            webSocket = new WebSocket("ws://localhost:8080/chat/" + document.getElementById("username").value);
             webSocket.onopen = function () {
                 console.log("已经连通了websocket");
                 setInnerText("ConnectionStatus", "连接服务器成功");
@@ -44,7 +44,7 @@
             webSocket.onclose = function () {
                 console.log("连接已关闭...");
                 setInnerText("ConnectionStatus", "连接服务器失败");
-                appendInnerText("history", username + "下线了</br>");
+                appendInnerText("history", "<div style='color: red'>" + username + "下线了</div>");
                 setInnerText("onlineNum", "不知道");
             };
             webSocket.onmessage = handle;
@@ -55,14 +55,18 @@
             var obj = JSON.parse(msgString);
             console.log(obj.msgType, obj.from, obj.to, obj.msgContent);
             if(obj.msgType == "Normal") {
-                appendInnerText("history", obj.from + " 对 " + obj.to + " 说： </br>" + obj.msgContent + "</br>");
+                appendInnerText("history",
+                    "<div style='color: darkblue'>" + obj.from + " 对 " + obj.to + " 说：</div> " +
+                    obj.msgContent + "<br>");
             }
             if(obj.msgType == "ConnectionEstablished") {
-                appendInnerText("history", obj.name + "上线了</br>");
+                appendInnerText("history",
+                    "<div style='color: green'>" + obj.name + "上线了</div>");
                 setInnerText("onlineNum", obj.onlineUsers.length);
             }
             if(obj.msgType == "ConnectionCut") {
-                appendInnerText("history", obj.name + "下线了</br>");
+                appendInnerText("history",
+                    "<div style='color: red'>" + obj.name + "下线了</div>");
                 setInnerText("onlineNum", obj.onlineUsers.length);
             }
         }

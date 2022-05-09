@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AnonymousChat</title>
+</head>
+<body>
+    <h1 id="ConnectionStatus" style="text-align: center; color: chocolate">尚未连接服务器</h1>
+    <div style="text-align: center">
+        输入用户名:
+        <input id="username"></input>
+        <button id="getConnection" onclick="getConnection()">连接</button>
+    </div>
+    <div>
+        <h3>当前在线人数：</h3>
+        <h3 id="onlineNum">不知道</h3>
+    </div>
+    <div>
+        <input id="inputBox"></input>
+        <button onclick="sendMessage()">发送</button>
+    </div>
+    <div id="history">
+
+    </div>
+    <script>
+        var webSocket;
+        var username;
+
+        function closeConnection() {
+            webSocket.close();
+            setInnerText("getConnection", "连接");
+            document.getElementById("getConnection").onclick = getConnection;
+        }
+
+        function getConnection() {
+            username = document.getElementById("username").value;
+            webSocket = new WebSocket("ws://120.24.213.224:8080/chat/" + document.getElementById("username").value);
+            webSocket.onopen = function () {
+                console.log("已经连通了websocket");
+                setInnerText("ConnectionStatus", "连接服务器成功");
+                setInnerText("getConnection", "断开连接");
+                document.getElementById("getConnection").onclick = closeConnection;
+            };
+            webSocket.onclose = function () {
+                console.log("连接已关闭...");
+                setInnerText("ConnectionStatus", "连接服务器失败");
+                appendInnerText("history", username + "下线了</br>");
+                setInnerText("onlineNum", "不知道");
+            };
+            webSocket.onmessage = handle;
+        }
+
+        function handle(msg) {
+            var msgString = msg.data;
+            var obj = JSON.parse(msgString);
+            console.log(obj.msgType, obj.from, obj.to, obj.msgContent);
+            if(obj.msgType == "Normal") {
+                appendInnerText("history", obj.from + " 对 " + obj.to + " 说： </br>" + obj.msgContent + "</br>");
+            }
+            if(obj.msgType == "ConnectionEstablished") {
+                appendInnerText("history", obj.name + "上线了</br>");
+                setInnerText("onlineNum", obj.onlineUsers.length);
+            }
+            if(obj.msgType == "ConnectionCut") {
+                appendInnerText("history", obj.name + "下线了</br>");
+                setInnerText("onlineNum", obj.onlineUsers.length);
+            }
+        }
+
+        function setInnerText(id, context) {
+            document.getElementById(id).innerHTML = context;
+        }
+
+        function appendInnerText(id, context) {
+            document.getElementById(id).innerHTML = context + document.getElementById(id).innerHTML;
+        }
+        function sendMessage() {
+            var msg = {
+                "msgType": "Normal",
+                "msgContent": document.getElementById("inputBox").value,
+                "from": username,
+                "to": "All",
+            };
+            webSocket.send(JSON.stringify(msg));
+            document.getElementById("inputBox").value = "";
+        }
+
+    </script>
+</body>
+</html>

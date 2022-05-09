@@ -1,4 +1,4 @@
-package top.franky.anonychatdemo;
+package top.franky.anonychatdemo.websocket;
 
 import org.springframework.stereotype.Component;
 import top.franky.anonychatdemo.message.*;

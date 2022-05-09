@@ -3,6 +3,7 @@ package top.franky.anonychatdemo.message;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class NormalMessage extends AbstractMessage {
@@ -13,6 +14,8 @@ public class NormalMessage extends AbstractMessage {
         addAttr("to", to);
         addAttr("msgContext", context);
         addAttr("msgType", "Normal");
+        Date now = new Date();
+        addAttr("date", now.toLocaleString());
     }
 
     public NormalMessage(String msgString) {
@@ -22,6 +25,7 @@ public class NormalMessage extends AbstractMessage {
         addAttr("to", obj.getString("to"));
         addAttr("msgContent", obj.getString("msgContent"));
         addAttr("msgType", obj.getString("msgType"));
+        addAttr("date", obj.getString("date"));
     }
 
     @Override

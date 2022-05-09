@@ -27,6 +27,9 @@
         var username;
 
         function closeConnection() {
+            let date = new Date();
+            appendInnerText("history", "<div style='color: red'>" + date.toLocaleDateString() + " " +
+                date.toLocaleTimeString() + " >> " + username + "下线了</div>");
             webSocket.close();
             setInnerText("getConnection", "连接");
             document.getElementById("getConnection").onclick = getConnection;
@@ -44,7 +47,6 @@
             webSocket.onclose = function () {
                 console.log("连接已关闭...");
                 setInnerText("ConnectionStatus", "连接服务器失败");
-                appendInnerText("history", "<div style='color: red'>" + username + "下线了</div>");
                 setInnerText("onlineNum", "不知道");
             };
             webSocket.onmessage = handle;
@@ -56,17 +58,17 @@
             console.log(obj.msgType, obj.from, obj.to, obj.msgContent);
             if(obj.msgType == "Normal") {
                 appendInnerText("history",
-                    "<div style='color: darkblue'>" + obj.from + " 对 " + obj.to + " 说：</div> " +
+                    "<div style='color: darkblue'>" + obj.date + " >> " + obj.from + " 对 " + obj.to + " 说：</div> " +
                     obj.msgContent + "<br>");
             }
             if(obj.msgType == "ConnectionEstablished") {
                 appendInnerText("history",
-                    "<div style='color: green'>" + obj.name + "上线了</div>");
+                    "<div style='color: green'>" + obj.date + " >> " + obj.name + "上线了</div>");
                 setInnerText("onlineNum", obj.onlineUsers.length);
             }
             if(obj.msgType == "ConnectionCut") {
                 appendInnerText("history",
-                    "<div style='color: red'>" + obj.name + "下线了</div>");
+                    "<div style='color: red'>" + obj.date + " >> " + obj.name + "下线了</div>");
                 setInnerText("onlineNum", obj.onlineUsers.length);
             }
         }
@@ -79,11 +81,13 @@
             document.getElementById(id).innerHTML = context + document.getElementById(id).innerHTML;
         }
         function sendMessage() {
-            var msg = {
+            let date = new Date();
+            let msg = {
                 "msgType": "Normal",
                 "msgContent": document.getElementById("inputBox").value,
                 "from": username,
                 "to": "All",
+                "date": date.toLocaleDateString() + " " + date.toLocaleTimeString(),
             };
             webSocket.send(JSON.stringify(msg));
             document.getElementById("inputBox").value = "";

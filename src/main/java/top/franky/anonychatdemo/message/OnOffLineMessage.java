@@ -3,6 +3,7 @@ package top.franky.anonychatdemo.message;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class OnOffLineMessage extends AbstractMessage {
@@ -11,6 +12,8 @@ public class OnOffLineMessage extends AbstractMessage {
         map = new ConcurrentHashMap<>();
         addAttr("msgType", type);
         addAttr("name", name);
+        Date now = new Date();
+        addAttr("date", now.toLocaleString());
     }
 
     public OnOffLineMessage(String msgString) {
@@ -18,6 +21,7 @@ public class OnOffLineMessage extends AbstractMessage {
         JSONObject obj = JSON.parseObject(msgString);
         addAttr("msgType", obj.getString("msgType"));
         addAttr("name", obj.getString("name"));
+        addAttr("date", obj.getString("date"));
     }
 
     @Override

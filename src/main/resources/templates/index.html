@@ -14,6 +14,7 @@
     <div>
         <h3>当前在线人数：</h3>
         <h3 id="onlineNum">不知道</h3>
+        <button id="showOnline" onclick="showOnline()">查看在线用户</button>
     </div>
     <div>
         <input id="inputBox"></input>
@@ -25,19 +26,27 @@
     <script>
         var webSocket;
         var username;
-
+        var onlineUsrs;
         function closeConnection() {
-            let date = new Date();
-            appendInnerText("history", "<div style='color: red'>" + date.toLocaleDateString() + " " +
-                date.toLocaleTimeString() + " >> " + username + "下线了</div>");
             webSocket.close();
             setInnerText("getConnection", "连接");
             document.getElementById("getConnection").onclick = getConnection;
+            now = new Date();
+            appendInnerText("history",
+                "<div style='color: red'>" + now.toLocaleDateString() + " " + now.toLocaleTimeString() + " >> " + username + "下线了</div>");
+            onlineUsrs = null;
+        }
+
+        function closeConnectionWithoutIndicator() {
+            webSocket.close();
+            setInnerText("getConnection", "连接");
+            document.getElementById("getConnection").onclick = getConnection;
+            onlineUsrs = null;
         }
 
         function getConnection() {
             username = document.getElementById("username").value;
-            webSocket = new WebSocket("ws://localhost:8080/chat/" + document.getElementById("username").value);
+            webSocket = new WebSocket("ws://120.24.213.224:8080/chat/" + document.getElementById("username").value);
             webSocket.onopen = function () {
                 console.log("已经连通了websocket");
                 setInnerText("ConnectionStatus", "连接服务器成功");
@@ -56,6 +65,12 @@
             var msgString = msg.data;
             var obj = JSON.parse(msgString);
             console.log(obj.msgType, obj.from, obj.to, obj.msgContent);
+            if(obj.msgType == "ConnectionRejected") {
+                closeConnectionWithoutIndicator();
+                confirm("连接请求被拒绝\n原因：" + obj.reason);
+
+                return;
+            }
             if(obj.msgType == "Normal") {
                 appendInnerText("history",
                     "<div style='color: darkblue'>" + obj.date + " >> " + obj.from + " 对 " + obj.to + " 说：</div> " +
@@ -64,11 +79,13 @@
             if(obj.msgType == "ConnectionEstablished") {
                 appendInnerText("history",
                     "<div style='color: green'>" + obj.date + " >> " + obj.name + "上线了</div>");
+                onlineUsrs = obj.onlineUsers;
                 setInnerText("onlineNum", obj.onlineUsers.length);
             }
             if(obj.msgType == "ConnectionCut") {
                 appendInnerText("history",
                     "<div style='color: red'>" + obj.date + " >> " + obj.name + "下线了</div>");
+                onlineUsrs = obj.onlineUsers;
                 setInnerText("onlineNum", obj.onlineUsers.length);
             }
         }
@@ -91,6 +108,13 @@
             };
             webSocket.send(JSON.stringify(msg));
             document.getElementById("inputBox").value = "";
+        }
+        function showOnline() {
+            var s = "";
+            for(var i = 0; i < onlineUsrs.length; i++) {
+                s += onlineUsrs[i] + "\n";
+            }
+            confirm(s);
         }
 
     </script>

@@ -25,6 +25,11 @@ public class WebSocket {
     @OnOpen
     public void onOpen(@PathParam("username") String name, Session session) {
         onlineNum++;
+        if(name2wb.get(name) != null) {
+            AbstractMessage rjctMsg = new RejectConnectionMessage(name, "匿名名称重复！");
+            session.getAsyncRemote().sendText(rjctMsg.getJsonString());
+            return;
+        }
         this.username = name;
         this.session = session;
         AbstractMessage msg = new OnOffLineMessage("ConnectionEstablished", name);

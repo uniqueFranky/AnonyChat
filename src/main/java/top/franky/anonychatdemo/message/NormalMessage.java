@@ -46,7 +46,9 @@ public class NormalMessage extends AbstractMessage {
     public String getTo() {
         return (String) map.get("to");
     }
-
+    public String getFrom() {
+        return (String) map.get("from");
+    }
     @Override
     public String toString() {
         return getJsonString();

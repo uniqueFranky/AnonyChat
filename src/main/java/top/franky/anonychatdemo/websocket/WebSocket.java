@@ -2,6 +2,7 @@ package top.franky.anonychatdemo.websocket;
 
 import org.springframework.stereotype.Component;
 import top.franky.anonychatdemo.message.*;
+import top.franky.anonychatdemo.messagehandler.MessageHandler;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
@@ -16,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @ServerEndpoint("/chat/{username}")
 public class WebSocket {
 
-    public static int onlineNum = 0;
+    private static int onlineNum = 0;
     private static Map<String, WebSocket> name2wb = new ConcurrentHashMap<>();
     private Session session;
     private String username;
@@ -53,17 +54,7 @@ public class WebSocket {
     @OnMessage
     public void onMessage(String msgString, Session session) {
         AbstractMessage msg = MessageBuilder.build(msgString);
-
-        //Normal Message
-        if(msg instanceof NormalMessage) {
-
-            String to = ((NormalMessage) msg).getTo();
-            if("All".equals(to)) {
-                sendMsgToAll(msg);
-            } else {
-                sendMsgToSingleSocketByName(msg, to);
-            }
-        }
+        MessageHandler.handleMessgae(msg);
     }
 
     @OnError
@@ -71,14 +62,17 @@ public class WebSocket {
         error.printStackTrace();
     }
 
-    private void sendMsgToSingleSocketByName(AbstractMessage msg, String to) {
+    public static void sendMsgToSingleSocketByName(AbstractMessage msg, String to) {
         sendMsgToSingleSocketByWB(msg, name2wb.get(to));
     }
-    private void sendMsgToSingleSocketByWB(AbstractMessage msg, WebSocket to) {
+    private static void sendMsgToSingleSocketByWB(AbstractMessage msg, WebSocket to) {
+        if(to == null) {
+            return;
+        }
         to.session.getAsyncRemote().sendText(msg.getJsonString());
     }
 
-    private void sendMsgToAll(AbstractMessage msg) {
+    public static void sendMsgToAll(AbstractMessage msg) {
 
         for(WebSocket ws: name2wb.values()) {
             System.out.println("Send: " + msg + ", to: " + ws.username);

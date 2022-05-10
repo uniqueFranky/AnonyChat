@@ -8,7 +8,7 @@
     <h1 id="ConnectionStatus" style="text-align: center; color: chocolate">尚未连接服务器</h1>
     <div style="text-align: center">
         输入用户名:
-        <input id="username"></input>
+        <input id="username" placeholder="匿名名称"></input>
         <button id="getConnection" onclick="getConnection()">连接</button>
     </div>
     <div>
@@ -17,8 +17,12 @@
         <button id="showOnline" onclick="showOnline()">查看在线用户</button>
     </div>
     <div>
-        <input id="inputBox"></input>
-        <button onclick="sendMessage()">发送</button>
+        <textarea id="inputBox" cols="50" rows="5" placeholder="输入你要发送的消息"></textarea>
+        <br>
+        <button onclick="sendMessage()">发送给</button>
+        <select id="selector">
+            <option>All</option>
+        </select>
     </div>
     <div id="history">
 
@@ -46,7 +50,7 @@
 
         function getConnection() {
             username = document.getElementById("username").value;
-            webSocket = new WebSocket("ws://120.24.213.224:8080/chat/" + document.getElementById("username").value);
+            webSocket = new WebSocket("ws://localhost:8080/chat/" + document.getElementById("username").value);
             webSocket.onopen = function () {
                 console.log("已经连通了websocket");
                 setInnerText("ConnectionStatus", "连接服务器成功");
@@ -81,12 +85,14 @@
                     "<div style='color: green'>" + obj.date + " >> " + obj.name + "上线了</div>");
                 onlineUsrs = obj.onlineUsers;
                 setInnerText("onlineNum", obj.onlineUsers.length);
+                updateSelector();
             }
             if(obj.msgType == "ConnectionCut") {
                 appendInnerText("history",
                     "<div style='color: red'>" + obj.date + " >> " + obj.name + "下线了</div>");
                 onlineUsrs = obj.onlineUsers;
                 setInnerText("onlineNum", obj.onlineUsers.length);
+                updateSelector();
             }
         }
 
@@ -103,7 +109,7 @@
                 "msgType": "Normal",
                 "msgContent": document.getElementById("inputBox").value,
                 "from": username,
-                "to": "All",
+                "to": document.getElementById("selector").value,
                 "date": date.toLocaleDateString() + " " + date.toLocaleTimeString(),
             };
             webSocket.send(JSON.stringify(msg));
@@ -115,6 +121,16 @@
                 s += onlineUsrs[i] + "\n";
             }
             confirm(s);
+        }
+
+        function updateSelector() {
+            var s = "<select>";
+            s += "<option>All</option>\n";
+            for(var i = 0; i < onlineUsrs.length; i++) {
+                s += "<option>" + onlineUsrs[i] + "</option>\n";
+            }
+            s += "</select>"
+            setInnerText("selector", s);
         }
 
     </script>

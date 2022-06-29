@@ -1,6 +1,6 @@
 # AnonyChatDemo
 
-## 用SpringBoot + WebSocket实现的匿名聊天室
+## 用WebSocket实现的匿名聊天室
 <http://120.24.213.224:8080/>
 ## TODO List:
  * 实现一对一的聊天
